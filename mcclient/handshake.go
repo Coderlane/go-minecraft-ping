@@ -1,7 +1,6 @@
 package mcclient
 
 import (
-	"bytes"
 	"encoding/binary"
 	"io"
 
@@ -18,49 +17,35 @@ type Handshake struct {
 
 // EncodeBinary encodes the handshake in the binary format for the wire
 func (hnd Handshake) EncodeBinary(writer io.Writer) error {
-	var (
-		err error
-		buf bytes.Buffer
-	)
-	if err = hnd.Version.EncodeBinary(&buf); err != nil {
+	var err error
+	if err = hnd.Version.EncodeBinary(writer); err != nil {
 		return err
 	}
-	if err = hnd.Address.EncodeBinary(&buf); err != nil {
+	if err = hnd.Address.EncodeBinary(writer); err != nil {
 		return err
 	}
-	if err = binary.Write(&buf, binary.BigEndian, hnd.Port); err != nil {
+	if err = binary.Write(writer, binary.BigEndian, hnd.Port); err != nil {
 		return err
 	}
-	if err = hnd.State.EncodeBinary(&buf); err != nil {
+	if err = hnd.State.EncodeBinary(writer); err != nil {
 		return err
 	}
-	pkt := client.Packet{
-		ID:   0,
-		Data: buf.Bytes(),
-	}
-	return pkt.EncodeBinary(writer)
+	return nil
 }
 
 // DecodeBinary decodes the handshake from the binary format on the wire
 func (hnd *Handshake) DecodeBinary(reader io.Reader) error {
-	var (
-		err error
-		pkt client.Packet
-	)
-	if err = pkt.DecodeBinary(reader); err != nil {
+	var err error
+	if err = hnd.Version.DecodeBinary(reader); err != nil {
 		return err
 	}
-	buf := bytes.NewReader(pkt.Data)
-	if err = hnd.Version.DecodeBinary(buf); err != nil {
+	if err = hnd.Address.DecodeBinary(reader); err != nil {
 		return err
 	}
-	if err = hnd.Address.DecodeBinary(buf); err != nil {
+	if err = binary.Read(reader, binary.BigEndian, &hnd.Port); err != nil {
 		return err
 	}
-	if err = binary.Read(buf, binary.BigEndian, &hnd.Port); err != nil {
-		return err
-	}
-	if err := hnd.State.DecodeBinary(buf); err != nil {
+	if err := hnd.State.DecodeBinary(reader); err != nil {
 		return err
 	}
 	return nil
