@@ -13,6 +13,19 @@ const (
 // VarInt is a 32 bit integer with variable encoding
 type VarInt int32
 
+// Length represents the encoded length of the integer
+func (vint VarInt) Length() int {
+	value := uint32(vint)
+	length := 0
+	for {
+		value >>= byteVarIntShift
+		length += 1
+		if value == 0 {
+			return length
+		}
+	}
+}
+
 // EncodeBinary encodes the VarInt in its binary format
 func (vint VarInt) EncodeBinary(writer io.ByteWriter) error {
 	value := uint32(vint)

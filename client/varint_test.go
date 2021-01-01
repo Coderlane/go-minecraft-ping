@@ -32,6 +32,9 @@ func TestEncodeDecodeVarInt(t *testing.T) {
 			if !reflect.DeepEqual(tcase.Expected, buf.Bytes()) {
 				t.Errorf("Expected: %v Got: %v", tcase.Expected, buf.Bytes())
 			}
+			if len(tcase.Expected) != input.Length() {
+				t.Errorf("Expected: %v Got: %v", len(tcase.Expected), input.Length())
+			}
 
 			var output VarInt
 			err = output.DecodeBinary(&buf)
