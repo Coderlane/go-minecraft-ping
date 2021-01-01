@@ -27,33 +27,34 @@ func (vint VarInt) Length() int {
 }
 
 // EncodeBinary encodes the VarInt in its binary format
-func (vint VarInt) EncodeBinary(writer io.ByteWriter) error {
+func (vint VarInt) EncodeBinary(writer io.Writer) error {
 	value := uint32(vint)
-	var temp byte
+	temp := make([]byte, 1)
 	for {
-		temp = (byte)(value & 0b01111111)
+		temp[0] = (byte)(value & 0b01111111)
 		value >>= byteVarIntShift
 		if value != 0 {
-			temp |= 0b10000000
-			writer.WriteByte(temp)
+			temp[0] |= 0b10000000
+			writer.Write(temp)
 		} else {
-			writer.WriteByte(temp)
+			writer.Write(temp)
 			return nil
 		}
 	}
 }
 
 // DecodeBinary decodes a VarInt from its binary format
-func (vint *VarInt) DecodeBinary(reader io.ByteReader) error {
+func (vint *VarInt) DecodeBinary(reader io.Reader) error {
 	output := VarInt(0)
 	var shift uint8
+	readByte := make([]byte, 1)
 	for {
-		readByte, err := reader.ReadByte()
+		_, err := reader.Read(readByte)
 		if err != nil {
 			return err
 		}
-		output |= (VarInt(0b01111111 & readByte)) << shift
-		if readByte&0b10000000 == 0 {
+		output |= (VarInt(0b01111111 & readByte[0])) << shift
+		if readByte[0]&0b10000000 == 0 {
 			break
 		}
 		shift += byteVarIntShift
