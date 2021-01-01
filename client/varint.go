@@ -19,7 +19,7 @@ func (vint VarInt) Length() int {
 	length := 0
 	for {
 		value >>= byteVarIntShift
-		length += 1
+		length++
 		if value == 0 {
 			return length
 		}
