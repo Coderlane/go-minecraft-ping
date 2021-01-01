@@ -12,7 +12,7 @@ type testServer struct {
 
 func newTestServer(t *testing.T) *testServer {
 	t.Helper()
-	ln, err := net.Listen("tcp", ":")
+	ln, err := net.Listen("tcp", "localhost:")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -56,6 +56,10 @@ func TestClientEcho(t *testing.T) {
 	defer cnt.Close()
 	if err != nil {
 		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(srv.listener.Addr().String(), cnt.Addr()) {
+		t.Errorf("Expected: %v Got: %v\n",
+			srv.listener.Addr().String(), cnt.Addr())
 	}
 
 	input := Packet{

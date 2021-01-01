@@ -1,11 +1,14 @@
 package client
 
+//go:generate mockgen -destination=mock_client.go -package=client -self_package=github.com/Coderlane/go-minecraft-ping/client github.com/Coderlane/go-minecraft-ping/client Client
+
 import (
 	"net"
 )
 
 // Client handles low level communication with Minecraft servers
 type Client interface {
+	Addr() string
 	Send(Packet) error
 	Recv() (*Packet, error)
 	Close() error
@@ -24,6 +27,11 @@ func NewClient(address string) (Client, error) {
 	return &client{
 		conn: conn,
 	}, nil
+}
+
+// Addr returns the remote address of the connection
+func (cln *client) Addr() string {
+	return cln.conn.RemoteAddr().String()
 }
 
 // Send a Packet on the connection
