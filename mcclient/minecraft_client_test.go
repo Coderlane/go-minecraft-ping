@@ -8,6 +8,27 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
+const testStatusResponse = `{
+    "version": {
+        "name": "1.8.7",
+        "protocol": 47
+    },
+    "players": {
+        "max": 10,
+        "online": 1,
+        "sample": [
+            {
+                "name": "test",
+                "id": "test_id"
+            }
+        ]
+    },
+    "description": {
+        "text": "Hello world"
+    },
+    "favicon": "data:image/png;base64,<data>"
+}`
+
 type testContext struct {
 	ctrl   *gomock.Controller
 	client *client.MockClient
@@ -65,7 +86,7 @@ func TestStatusSuccess(t *testing.T) {
 		ID: 0,
 	}
 
-	testStr := client.VarString("test")
+	testStr := client.VarString(testStatusResponse)
 	var buf bytes.Buffer
 	if err := testStr.EncodeBinary(&buf); err != nil {
 		t.Fatal(err)
@@ -81,5 +102,9 @@ func TestStatusSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(status)
+	if status.Description.Text != "Hello world" {
+		t.Errorf("Expected \"Hello world\": Got: \"%s\"\n",
+			status.Description.Text)
+	}
+	t.Logf("%+v\n", status)
 }

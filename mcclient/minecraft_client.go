@@ -2,9 +2,11 @@ package mcclient
 
 import (
 	"bytes"
-	"github.com/Coderlane/go-minecraft-ping/client"
+	"encoding/json"
 	"net"
 	"strconv"
+
+	"github.com/Coderlane/go-minecraft-ping/client"
 )
 
 // ClientState represents the connection state of the client
@@ -22,7 +24,7 @@ const (
 // MinecraftClient represents a client connection to a Minecraft server
 type MinecraftClient interface {
 	Handshake(ClientState) error
-	Status() (string, error)
+	Status() (*StatusResponse, error)
 	Close() error
 }
 
@@ -71,23 +73,28 @@ func (cln *mcclient) Handshake(state ClientState) error {
 }
 
 // Status requests the status from the minecraft server
-func (cln *mcclient) Status() (string, error) {
+func (cln *mcclient) Status() (*StatusResponse, error) {
 	request := client.Packet{
 		ID: 0,
 	}
 	if err := cln.conn.Send(request); err != nil {
-		return "", err
+		return nil, err
 	}
 	response, err := cln.conn.Recv()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	buf := bytes.NewReader(response.Data)
 	var data client.VarString
 	if err := data.DecodeBinary(buf); err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(data), nil
+	var status StatusResponse
+	err = json.Unmarshal([]byte(data), &status)
+	if err != nil {
+		return nil, err
+	}
+	return &status, nil
 }
 
 // Close closes the connection with the minecraft server
