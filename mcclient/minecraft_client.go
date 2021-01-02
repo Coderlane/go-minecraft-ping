@@ -35,7 +35,7 @@ type mcclient struct {
 	state ClientState
 }
 
-// NewMinecraftClient creates a new client connection with a Minecraft server
+// NewMinecraftClient wraps an existing client connection as a MinecraftClient
 func NewMinecraftClient(client client.Client) (MinecraftClient, error) {
 	host, strPort, err := net.SplitHostPort(client.Addr())
 	if err != nil {
@@ -50,6 +50,16 @@ func NewMinecraftClient(client client.Client) (MinecraftClient, error) {
 		host: host,
 		port: port,
 	}, nil
+}
+
+// NewMinecraftClientFromAddress creates a new client connection with a
+// Minecraft server
+func NewMinecraftClientFromAddress(address string) (MinecraftClient, error) {
+	client, err := client.NewClient(address)
+	if err != nil {
+		return nil, err
+	}
+	return NewMinecraftClient(client)
 }
 
 // Handshake performs the opening handshake with the server. The state

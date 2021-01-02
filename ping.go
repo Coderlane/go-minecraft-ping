@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/Coderlane/go-minecraft-ping/client"
 	"github.com/Coderlane/go-minecraft-ping/mcclient"
 )
 
@@ -13,12 +12,7 @@ var server = flag.String("server", "localhost:25565",
 
 func main() {
 	fmt.Printf("Connecting to: %s\n", *server)
-	rawcnt, err := client.NewClient(*server)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	cnt, err := mcclient.NewMinecraftClient(rawcnt)
+	cnt, err := mcclient.NewMinecraftClientFromAddress(*server)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -33,7 +27,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Printf("Response: %s\n", status)
+	fmt.Printf("Response: %+v\n", status)
 	err = cnt.Close()
 	if err != nil {
 		fmt.Println(err)
