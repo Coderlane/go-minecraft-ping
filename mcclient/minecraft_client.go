@@ -1,5 +1,7 @@
 package mcclient
 
+//go:generate mockgen -destination=mock_minecraft_client.go -package=mcclient -self_package=github.com/Coderlane/go-minecraft-ping/mcclient github.com/Coderlane/go-minecraft-ping/mcclient MinecraftClient
+
 import (
 	"bytes"
 	"encoding/json"
